@@ -1,0 +1,67 @@
+test0<-read.csv('/Users/yanmemgxing/Desktop/my files/2021/mentor-mentee/Qing Ke/fields/physics/test0_0.25.csv',sep=',',header=TRUE)   #physics
+CutPoint0<-read.csv('/Users/yanmemgxing/Desktop/my files/2021/mentor-mentee/Qing Ke/fields/physics/CutPoint0_0.25.csv',sep=',',header=TRUE)  #physics
+filter_c0<-c('StopYear','First5YearPubsOfMentee','First5YearCitationOfMentee','First5YearCollaOfMentee','BigOrSmall','TotalPubsOfMentor','TotalCitationOfMentor','TotalCollaOfMentor','YearlyPubsOfMentor','YearlyCitationOfMentor','YearllyCollaOfMentor','CareerAgeOfMentorInTraining','PubsOfMentorInTraning','CollaPubsOfWithMentor','Survival0')
+sub_test0 = subset(test0,StopYear>=1960&StopYear<=1995,select=filter_c0)
+
+StopYearCut<-c(1960,1980,1990,1995)
+#todrop0<-c('Survival0','BigOrSmall')
+todrop0<-c('Survival0','BigOrSmall','CareerAgeOfMentorInTraining')
+mat0 <- cem(treatment="BigOrSmall", data=sub_test0, drop=todrop0,cutpoints = list(TotalPubsOfMentor = CutPoint0[['TotalPubsOfMentor']],YearlyCitationOfMentor=CutPoint0[['YearlyCitationOfMentor']],YearlyPubsOfMentor=CutPoint0[['YearlyPubsOfMentor']],YearllyCollaOfMentor=CutPoint0[['YearllyCollaOfMentor']],TotalCollaOfMentor=CutPoint0[['TotalCollaOfMentor']],TotalCitationOfMentor=CutPoint0[['TotalCitationOfMentor']],CareerAgeOfMentorInTraining=CutPoint0[['CareerAgeOfMentorInTraining']],StopYear=StopYearCut,First5YearPubsOfMentee=CutPoint0[['First5YearPubsOfMentee']],First5YearCollaOfMentee=CutPoint0[['First5YearCollaOfMentee']],First5YearCitationOfMentee=CutPoint0[['First5YearCitationOfMentee']],PubsOfMentorInTraning=CutPoint0[['PubsOfMentorInTraning']],CollaPubsOfWithMentor=CutPoint0[['CollaPubsOfWithMentor']]),keep.all=TRUE)
+MATCHED = sub_test0[which(mat0[["matched"]]==TRUE),]       #得到 matched data
+#imbalance(group=MATCHED$BigOrSmall, data=MATCHED[vars])    #匹配完的数据平衡性测试
+
+#平衡性测试
+#vars<-c('StopYear','First5YearPubsOfMentee','First5YearCitationOfMentee','First5YearCollaOfMentee',
+                     #'TotalPubsOfMentor','TotalCitationOfMentor','TotalCollaOfMentor','YearlyPubsOfMentor','YearlyCitationOfMentor','YearllyCollaOfMentor','PubsOfMentorInTraning','CollaPubsOfWithMentor','CareerAgeOfMentor#InTraining')
+
+#imbalance(group=sub_test0$BigOrSmall, data=sub_test0[vars])     #未匹配数据
+
+
+
+
+#匹配完数据不平衡变量回归
+model0<-glm(Survival0 ~ BigOrSmall+First5YearPubsOfMentee+First5YearCitationOfMentee+First5YearCollaOfMentee+TotalPubsOfMentor+TotalCitationOfMentor+
+TotalCollaOfMentor+YearlyPubsOfMentor+YearlyCitationOfMentor+YearllyCollaOfMentor+PubsOfMentorInTraning+CollaPubsOfWithMentor+CareerAgeOfMentorInTraining
+,data=MATCHED,family = "binomial")summary(model0)
+
+#step函数实现逐步回归法model0_1<-step(object = model0,trace = 0)summary(model0_1)
+
+#model1_phy<-model1#model1_1_phy<-model1_1
+
+
+# k-fold cross validation 交叉验证
+library(caret)
+train_control <- trainControl(method = "cv", number = 10)
+
+# train the model on training set
+model <- train(Survival0 ~ BigOrSmall+First5YearPubsOfMentee+First5YearCitationOfMentee+First5YearCollaOfMentee+TotalPubsOfMentor+TotalCitationOfMentor+
+TotalCollaOfMentor+YearlyPubsOfMentor+YearlyCitationOfMentor+YearllyCollaOfMentor+PubsOfMentorInTraning+CollaPubsOfWithMentor+CareerAgeOfMentorInTraining,               data = MATCHED,               trControl = train_control,               method = "glm",               family=binomial())
+# print cv scores
+print(model)
+#summary(model)
+k_fold_physics = model
+
+
+#显著性检验
+#模型的显著性检验
+test = anova(object = model0_1,test = "Chisq")
+print(test)
+
+#模型对样本外数据(测试集)的预测精度
+prob<-predict(object =model0_1,newdata=MATCHED,type = "response")
+pred<-ifelse(prob>=0.5,1,0)
+pred<-factor(pred,levels = c(0,1),order=TRUE)
+f<-table(MATCHED$Survival0,pred)
+print(f)
+#print 预测精度
+print((f[1]+f[4])/(f[1]+f[2]+f[3]+f[4]))
+
+test_chem<-test
+f_chem<-f
+
+#导出 latex 
+library(stargazer)
+stargazer(linear.1, linear.2, probit.model, title="Regression Results", align=TRUE)
+
+
+
