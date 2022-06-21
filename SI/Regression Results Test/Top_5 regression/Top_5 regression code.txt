@@ -1,0 +1,126 @@
+
+
+
+
+
+library(cem)
+
+
+test1<-read.csv('/Users/yanmemgxing/Desktop/my files/2021/mentor-mentee/Qing Ke/fields/chemistry/test1_0.25.csv',sep=',',header=TRUE)    #chemistryCutPoint1<-read.csv('/Users/yanmemgxing/Desktop/my files/2021/mentor-mentee/Qing Ke/fields/chemistry/CutPoint1_0.25.csv',sep=',',header=TRUE) #chemistry
+
+filter_c1<-c('StopYear','First5YearPubsOfMentee','First5YearCitationOfMentee','First5YearCollaOfMentee','BigOrSmall','TotalPubsOfMentor','TotalCitationOfMentor','TotalCollaOfMentor','YearlyPubsOfMentor','YearlyCitationOfMentor','YearllyCollaOfMentor','CareerAgeOfMentorInTraining','PubsOfMentorInTraning','CollaPubsOfWithMentor','Top25')
+sub_test1 = subset(test1,StopYear>1960&StopYear<=1995,select=filter_c1)
+
+#todrop1<-c('Top25')
+todrop1<-c('Top25','BigOrSmall','CareerAgeOfMentorInTraining')
+
+StopYearCut<-c(1960,1980,1990,1995)
+
+mat1 <- cem(treatment="BigOrSmall", data=sub_test1, drop=todrop1,cutpoints = list(TotalPubsOfMentor = CutPoint1[['TotalPubsOfMentor']],YearlyCitationOfMentor=CutPoint1[['YearlyCitationOfMentor']],YearlyPubsOfMentor=CutPoint1[['YearlyPubsOfMentor']],YearllyCollaOfMentor=CutPoint1[['YearllyCollaOfMentor']],TotalCollaOfMentor=CutPoint1[['TotalCollaOfMentor']],TotalCitationOfMentor=CutPoint1[['TotalCitationOfMentor']],CareerAgeOfMentorInTraining=CutPoint1[['CareerAgeOfMentorInTraining']],StopYear=StopYearCut,First5YearPubsOfMentee=CutPoint1[['First5YearPubsOfMentee']],First5YearCollaOfMentee=CutPoint1[['First5YearCollaOfMentee']],First5YearCitationOfMentee=CutPoint1[['First5YearCitationOfMentee']],PubsOfMentorInTraning=CutPoint1[['PubsOfMentorInTraning']],CollaPubsOfWithMentor=CutPoint1[['CollaPubsOfWithMentor']]),keep.all=TRUE)
+
+mat1
+
+MATCHED = sub_test1[which(mat1[["matched"]]==TRUE),]       #得到 matched data
+
+#model2<-glm(Top25 ~.,data=MATCHED,family = "binomial")
+
+
+#匹配完数据不平衡变量回归
+model2<-glm(Top25 ~ BigOrSmall+First5YearPubsOfMentee+First5YearCitationOfMentee+First5YearCollaOfMentee+TotalPubsOfMentor+TotalCitationOfMentor+
+TotalCollaOfMentor+YearlyPubsOfMentor+YearlyCitationOfMentor+YearllyCollaOfMentor+PubsOfMentorInTraning+CollaPubsOfWithMentor+CareerAgeOfMentorInTraining
+,data=MATCHED,family = "binomial")
+
+summary(model2)
+#step函数实现逐步回归法
+model2_1<-step(object = model2,trace = 0)
+summary(model2_1)
+
+model2_chem<-model2model2_1_chem<-model2_1
+
+
+#输出latex表格
+library(stargazer)stargazer(model2_chem, model2_phy, model2_neuro,model2_1_chem,model2_1_phy,model2_1_neuro,title="CEM Logistic Regression Results for Top 5、%", align=TRUE)
+
+
+
+
+#不匹配回归 for neuro
+test1<-read.csv('/Users/yanmemgxing/Desktop/my files/2021/mentor-mentee/Qing Ke/fields/neuro/test1_0.25.csv',sep=',',header=TRUE)    #neuro
+filter_c1<-c('StopYear','First5YearPubsOfMentee','First5YearCitationOfMentee','First5YearCollaOfMentee','BigOrSmall','TotalPubsOfMentor','TotalCitationOfMentor','TotalCollaOfMentor','YearlyPubsOfMentor','YearlyCitationOfMentor','YearllyCollaOfMentor','CareerAgeOfMentorInTraining','PubsOfMentorInTraning','CollaPubsOfWithMentor','Top25')
+sub_test1 = subset(test1,StopYear>1960&StopYear<=1989,select=filter_c1)
+model2<-glm(Top25 ~.,data=sub_test1)
+summary(model2)
+model2_1<-step(object = model2,trace = 0)
+summary(model2_1)
+model2_neuro<-model2model2_1_neuro<-model2_1
+
+#模型对样本外数据(测试集)的预测精度
+prob<-predict(object =model2_1,newdata=sub_test1,type = "response")
+pred<-ifelse(prob>=0.5,1,0)
+pred<-factor(pred,levels = c(0,1),order=TRUE)
+f<-table(sub_test1$Top25,pred)
+print(f)
+#print 预测精度
+print((f[1]+f[4])/(f[1]+f[2]+f[3]+f[4]))
+
+f_neuro<-f
+
+# k-fold cross validation 交叉验证
+train_control <- trainControl(method = "cv", number = 5)
+
+# train the model on training set
+model <- train(Top25 ~ BigOrSmall+First5YearPubsOfMentee+First5YearCitationOfMentee+First5YearCollaOfMentee+TotalPubsOfMentor+TotalCitationOfMentor+
+TotalCollaOfMentor+YearlyPubsOfMentor+YearlyCitationOfMentor+YearllyCollaOfMentor+PubsOfMentorInTraning+CollaPubsOfWithMentor+CareerAgeOfMentorInTraining+StopYear,               data = sub_test1,               trControl = train_control,               method = "glm",               family=binomial())
+# print cv scores
+print(model)
+#summary(model)
+k_fold_neuro = model
+
+
+
+
+
+#平衡性测试
+vars<-c('StopYear','First5YearPubsOfMentee','First5YearCitationOfMentee','First5YearCollaOfMentee',
+                     'TotalPubsOfMentor','TotalCitationOfMentor','TotalCollaOfMentor',
+                     'YearlyPubsOfMentor','YearlyCitationOfMentor','YearllyCollaOfMentor','PubsOfMentorInTraning','CollaPubsOfWithMentor')
+imbalance(group=sub_test1$BigOrSmall, data=sub_test1[vars])     #未匹配数据
+
+
+imbalance(group=MATCHED$BigOrSmall, data=MATCHED[vars])         #匹配完数据
+
+
+#显著性检验
+#模型卡方检验
+test_chem = anova(object = model2_1_chem,test = "Chisq")
+
+print(test_chem)
+
+
+
+#模型对样本外数据(测试集)的预测精度
+prob<-predict(object =model2_1,newdata=MATCHED,type = "response")
+pred<-ifelse(prob>=0.5,1,0)
+pred<-factor(pred,levels = c(0,1),order=TRUE)
+f<-table(MATCHED$Top25,pred)
+print(f)
+#print 预测精度
+print((f[1]+f[4])/(f[1]+f[2]+f[3]+f[4]))
+
+f_chem<-f
+
+f<-f_chemprint((f[1]+f[4])/(f[1]+f[2]+f[3]+f[4]))print(f[1]/(f[1]+f[3]))print(f[4]/(f[2]+f[4]))
+
+
+# k-fold cross validation 交叉验证
+library(caret)
+train_control <- trainControl(method = "cv", number = 5)
+
+# train the model on training set
+model <- train(Top25 ~ BigOrSmall+First5YearPubsOfMentee+First5YearCitationOfMentee+First5YearCollaOfMentee+TotalPubsOfMentor+TotalCitationOfMentor+
+TotalCollaOfMentor+YearlyPubsOfMentor+YearlyCitationOfMentor+YearllyCollaOfMentor+PubsOfMentorInTraning+CollaPubsOfWithMentor+CareerAgeOfMentorInTraining,               data = MATCHED,               trControl = train_control,               method = "glm",               family=binomial())
+# print cv scores
+print(model)
+#summary(model)
+k_fold_chem = model
+
