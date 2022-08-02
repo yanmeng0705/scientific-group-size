@@ -29,6 +29,6 @@ The folder includes 5 subfolders,
 To reader who want to replicate the results of this paper:
 1. The folder is the same as the folder at https://data.mendeley.com/datasets/h2rgjzrggp/draft?a=f9fda85e-78fb-4e86-a253-5e8308f4b530 . But the second folder includes the data you need for the codes.
 
-2. The file address in the codes is wrote by the author's PC local address. Thus, after downloading the data and codes, you have to change the file address in codes to run it rightly. 
+2. The file address in the codes is wrote by the local address at author's PC. Thus, after downloading the data and codes, you have to change the file address in codes to run it rightly. 
 
 3. If you have any questions about the data and codes, please email to yanmengxing@mail.bnu.edu.cn .
