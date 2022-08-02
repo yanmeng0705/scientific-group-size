@@ -3,6 +3,7 @@ The folder includes 5 subfolders,
 1. 'common codes' : These codes can be used to generate the plots (Fig. 2-5) in the main text. 
 
 2. 'chemistry' : This folder includes 4 .ipynb files to process the data for the main plots. And 3 subfolders.
+
   (1)'chemistry fig2 preparation.ipynb' : to export the number of mentees, surviral rate of mentees, fecundity of mentees, yearly citations of mentees
 
   (2)'merge publishing info.ipynb' : process the publications data of analyzed targets in this paper
