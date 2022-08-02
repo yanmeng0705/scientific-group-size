@@ -25,4 +25,4 @@ To reader who want to replicate the results of this paper:
 
 2. The file address in the codes is wrote by the author's PC local address. Thus, after downloading the data and codes, you have to change the file address in codes to run it rightly. 
 
-3. If you have any questions about the data and codes, please contact yanmengxing@mail.bnu.edu.cn .
+3. If you have any questions about the data and codes, please email to yanmengxing@mail.bnu.edu.cn .
