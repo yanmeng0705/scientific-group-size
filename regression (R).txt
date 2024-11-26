@@ -1,0 +1,66 @@
+# CEM and Survival regression
+
+library(cem)
+# import the table including variables
+initial_table <- read.csv("~/scientific group/neuro/survival/regression/initial_table.csv")
+initial_subtable = subset(initial_table,end_year>=start&end_year<=end)
+
+todrop<-c("author_id","mentor_id",
+"mentee_career_len","firstAuthor_colla_total_cits5","average_group_size","end_year","mentor_career_len","Survival","mentor_first_pub_year")
+
+mat <- cem(treatment = "BigOrSmall", data = initial_subtable, drop = todrop, keep.all=TRUE)
+
+MATCHED = initial_subtable[which(mat[["matched"]]==TRUE),]       #get matched data
+
+model0<-glm(Survival ~ BigOrSmall + paperNum_first_5year + total_cits5_first_5year + unique_collaborators_first_5year + mentor_trainning_paperNum +  mentor_trainning_total_cits5 + unique_collaborators_trainning_mentor + mentor_career_paperNum + mentor_career_total_cits5 + unique_collaborators_career_mentor  + mentor_career_yearly_paperNum + mentor_career_yearly_cits5 + mentor_career_yearly_collaborators + otherAuthor_colla_pa + firstAuthor_colla_pa + colla_total_cits5 + mentor_trainning_scientific_age,data=MATCHED,family = "binomial")
+
+summary(model0)
+
+model0_1<-step(object = model0, trace = 0)  # step regression
+summary(model0_1)
+
+
+# CEM and Yearly_cits5 regression
+
+library(cem)
+# import the table including variables
+initial_table <- read.csv("~/scientific group/neuro/performance/regression/initial_table(yearly_cits5).csv")
+initial_subtable = subset(initial_table,end_year>=start&end_year<=end)
+
+todrop<-c("author_id","mentor_id","mentee_career_len","firstAuthor_colla_total_cits5","average_group_size","end_year","mentor_career_len","yearly_cits5","mentor_first_pub_year") 
+
+mat <- cem(treatment = "BigOrSmall", data = initial_subtable, drop = todrop, keep.all=TRUE)
+
+MATCHED = initial_subtable[which(mat[["matched"]]==TRUE),]       # get matched data
+
+model0<-lm(yearly_cits5 ~ BigOrSmall + paperNum_first_5year + total_cits5_first_5year + unique_collaborators_first_5year + mentor_trainning_paperNum +  mentor_trainning_total_cits5 + unique_collaborators_trainning_mentor + mentor_career_paperNum + mentor_career_total_cits5 + unique_collaborators_career_mentor  + mentor_career_yearly_paperNum + mentor_career_yearly_cits5 + mentor_career_yearly_collaborators  + firstAuthor_colla_pa + otherAuthor_colla_pa + colla_total_cits5 + mentor_trainning_scientific_age,data=MATCHED)
+
+summary(model0)
+
+model0_1<-step(object = model0, trace = 0)
+
+summary(model0_1)
+
+
+# CEM and Fecundity regression
+
+library(cem)
+# import the table including variables
+initial_table <- read.csv("~/scientific group/neuro/fecundity/regression/initial_table(fecundity).csv")
+initial_subtable = subset(initial_table,end_year>=start&end_year<=end)
+
+todrop<-c("author_id","mentor_id","mentee_career_len","firstAuthor_colla_total_cits5",
+"average_group_size","end_year","mentor_career_len","mentor_first_pub_year","author_cumulative_fecundity","author_average_fecundity") 
+
+mat <- cem(treatment = "BigOrSmall", data = initial_subtable, drop = todrop, keep.all=TRUE)
+
+MATCHED = initial_subtable[which(mat[["matched"]]==TRUE),] 
+
+model0<-lm(author_cumulative_fecundity ~ BigOrSmall + paperNum_first_5year + total_cits5_first_5year + unique_collaborators_first_5year + mentor_trainning_paperNum +  mentor_trainning_total_cits5 + unique_collaborators_trainning_mentor + mentor_career_paperNum + mentor_career_total_cits5 + unique_collaborators_career_mentor  + mentor_career_yearly_paperNum + mentor_career_yearly_cits5 + mentor_career_yearly_collaborators + otherAuthor_colla_pa + firstAuthor_colla_pa + colla_total_cits5 + mentor_trainning_scientific_age,data=MATCHED)
+
+summary(model0)
+
+model0_1<-step(object = model0, trace = 0)
+
+summary(model0_1)
+
